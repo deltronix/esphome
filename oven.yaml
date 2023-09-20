@@ -1,0 +1,53 @@
+esphome:
+  name: oven
+
+esp32:
+  board: esp-wrover-kit
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  password: "lmioeikyb"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Oven Fallback Hotspot"
+    password: "F11myHXNyBs7"
+
+captive_portal:
+
+switch:
+  - platform: gpio
+    pin: 21
+    name: "K1"
+
+i2c:
+  scl: 26
+  sda: 27
+  frequency: 10kHz
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 12
+
+display:
+  - platform: ssd1306_i2c
+    model: "SH1106 128x64"
+    address: 0x3c
+    contrast: 25%
+    lambda: |-
+      it.fill(COLOR_OFF);
+      it.print(1,1,id(roboto),"Hello World!");

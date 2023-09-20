@@ -1,0 +1,97 @@
+esphome:
+  name: nixie
+  libraries:
+    - Time
+  includes:
+    - nixie_spi.h
+
+esp32:
+  board: esp32thing
+  framework:
+    type: arduino
+
+
+custom_component:
+  id: my_nixie
+  lambda: !lambda |-
+    auto my_nixie = new Nixie();
+    App.register_component(my_nixie);
+    return {my_nixie};
+
+switch:
+  - platform: gpio
+    name: "LED"
+    pin: 5
+  - platform: custom
+    lambda: |-
+      static Nixie* nixie = Nixie::get(my_nixie);
+      return{ nixie };
+    switches:
+      name: "nixie"
+      id: nixie
+
+
+time:
+  - platform: sntp
+    id: homeassistant_time
+    on_time_sync:
+      then:
+      - logger.log: "Synchronized system clock"
+
+number:
+  - platform: template
+    name: "Nixie Display"
+    min_value: 0
+    max_value: 999999
+    step: 1
+    set_action:
+      lambda: |-
+        static Nixie* nixie = Nixie::get(my_nixie);
+        nixie->set_time(x, x, x);
+    lambda: |-
+      char str[32];
+      auto t = id(homeassistant_time).now();
+      time_t ts = t.timestamp;
+      strftime(str, sizeof(str), "HUH %Y-%m-%d %H:%M:%S", localtime(&ts));
+      static Nixie* nixie = Nixie::get(my_nixie);
+      auto lt = localtime(&ts);
+      nixie->set_time(lt->tm_hour, lt->tm_min, lt->tm_sec);
+      return{ ts };
+    update_interval: 1s
+
+  #interval:
+  # - interval: 5s
+  #   then:
+  #     lambda: |-
+  #       if (id(sntp_time).now().is_valid()){
+  #         auto* nixie = Nixie::get(my_nixie);
+  #         auto time = id(sntp_time).now();
+  #         nixie->set_time(time.hour,time.minute,time.second);
+  #       }
+
+# Enable logging
+logger:
+
+spi:
+  clk_pin: 18
+  mosi_pin: 23
+  miso_pin: 19
+
+# Enable Home Assistant API
+api:
+  password: "lmioeikyb"
+
+ota:
+  password: "lmioeikyb"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Nixie Fallback Hotspot"
+    password: "HibK6YVTJu6v"
+
+captive_portal:
+    

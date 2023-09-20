@@ -1,0 +1,56 @@
+esphome:
+  name: "balkon"
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+    #   type: esp-idf
+    #   version: recommended
+    #   sdkconfig_options:
+    #     COMPILER_OPTIMIZATION_SIZE: y
+    #   advanced:
+    #     ignore_efuse_mac_crc: false
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "5XBI/22jjeUrjct8LvZtfnLjbAuJsynkF00yJ0TsuCA="
+
+ota:
+  password: "lmioeikyb"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: " Fallback Hotspot"
+    password: "MaCswtYCCYlq"
+
+light:
+  - platform: binary
+    name: "Balkon lampjes"
+    output: lamp_output
+
+output:
+  - id: lamp_output
+    platform: gpio
+    pin: 3
+
+sensor:
+  - platform: dht
+    pin: 2
+    temperature:
+      name: "Temperature"
+    humidity:
+      accuracy_decimals: 1
+      name: "Humidity"
+    update_interval: 60s
+    model: "DHT22"
+
+
